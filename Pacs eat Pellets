@@ -157,14 +157,7 @@ class Player
             Console.Error.WriteLine("my Pac index " + myPacIndex);
             // identify threat from other Pac's - is there any - distance, type, ability to switch
             // make strategy for each of your pac's - Attack, Deffend/run away, Collect pellets
-            for (int i = 0; i < height; i++)
-            {
-                for (int j = 0; j < width; j++)
-                {
-                    Console.Error.Write( graphicGrid[i, j] );
-                }
-                Console.Error.WriteLine("");
-            }
+
         
 
             // Work with Pellets now
@@ -195,6 +188,11 @@ class Player
                 int tempY;
                 int tempValue;
                 bool targetPelletUsed = false;
+                if (value == 10)
+                    graphicGrid[y,x] = 'O';
+                else 
+                    graphicGrid[y,x] = 'o';
+                
                     if (value == 10)
                     {
                         for (int e = 0 ; e <= myPacIndex; e++)
@@ -246,6 +244,15 @@ class Player
                     }
 
               }
+
+             for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    Console.Error.Write( graphicGrid[i, j] );
+                }
+                Console.Error.WriteLine("");
+            }
                         //List<int> moves = new List<int>(); 
                         for( int element = 0 ; element <= myPacIndex; element++ )
                         {

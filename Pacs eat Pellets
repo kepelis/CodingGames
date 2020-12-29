@@ -1,0 +1,300 @@
+using System;
+using System.Linq;
+using System.IO;
+using System.Text;
+using System.Collections;
+using System.Collections.Generic;
+
+/**
+ * Grab the pellets as fast as you can!
+ **/
+
+
+
+class Player
+{
+
+    static int setRandomInt (int from, int to)
+    {
+         var random = new Random();
+         return random.Next(from, to);
+    }
+    
+    
+    static bool isPelletBetter(int pacX, int pacY, int pacTX, int pacTY, int pacTvalue, int newX, int newY, int newV)
+    {
+        double pacDistance = Math.Sqrt( 
+                                        Math.Pow (Math.Abs((double)pacX - pacTX), 2 ) +
+                                        Math.Pow (Math.Abs((double)pacY - pacTY), 2 )
+                                        );
+        double pacNewDistance = Math.Sqrt( 
+                                        Math.Pow (Math.Abs((double)pacX - newX), 2 ) +
+                                        Math.Pow (Math.Abs((double)pacY - newY), 2 )
+                                        );
+        if  ( (newV > pacTvalue) || ((newV >= pacTvalue) & (pacNewDistance < pacDistance)) )
+            return true;
+        else   
+            return false;
+    }
+
+    static char[,] cleanGraphicGrid (char[,] grid)
+    {
+        for (int i = 0; i < grid.GetLength(0); i++)
+        {
+            for (int j = 0; j < grid.GetLength(1); j++)
+                {
+                    if ( grid[i, j] != '#' )
+                        grid[i,j] = ' ';
+                }
+        }
+ 
+        return grid;
+    }
+
+    public class Pac
+    {
+        public int PacID;
+        public int PacX;
+        public int PacY;
+        public string PacTypeId; 
+        public int PacTargetX;
+        public int PacTargetY;
+        public int PacTargetValue;
+        public bool PacTargetSet; 
+        public int PacSpeedTurnsLeft; // the number of remaining turns before the speed effect fades
+        public int PacAbilityCooldown;
+        
+
+        public void addPac (int pacID, int pacX, int pacY)
+            {
+                // myPacsID
+            }
+        public void myPacsSet ()   
+            {
+                //;
+            }
+
+    }
+    // Skaiciuoti kiek mato tiesia linija i kiekviena puse, pasirinkti krypti (gali nematyti nei vieno, nes nera aplinkui. ka tada? eiti i kita puse?)
+    // Kovoti su priesininku, pakeisti tipa jei priesinkas netoli
+    // SWITCH pacId pacType... SWITCH - ROCK, PAPER, SCISSORS, ROCK...
+    // , SPEED - countdown 10 turns
+    // MOVE
+    // SPEED pacID - 2 steps instead of 1 during next 5 turns
+    // vengti susidurimu su savais, neiti i ta pati taska.
+    
+
+
+    static void Main(string[] args)
+    {
+        string[] inputs;
+        inputs = Console.ReadLine().Split(' ');
+        int width = int.Parse(inputs[0]); // size of the grid
+        int height = int.Parse(inputs[1]); // top left corner is (x=0, y=0)
+        
+        // read the graphic grid and transform into 2D array
+        char[,] graphicGrid = new char[height, width];
+        Console.Error.WriteLine(height + " " + width);
+        for (int i = 0; i < height; i++)
+        {
+            string row = Console.ReadLine(); // one line of the grid: space " " is floor, pound "#" is wall
+            for (int j = 0; j < row.Length; j++)
+            {
+                graphicGrid[i, j] = row[j];
+                Console.Error.Write( graphicGrid[i, j] );
+            }
+            Console.Error.WriteLine("");
+        }
+
+        // game loop
+        while (true)
+        {
+            Console.Error.WriteLine(" new while cycle");
+            // how many visible Pacs ?
+            // and how many i got
+            inputs = Console.ReadLine().Split(' ');
+            int myScore = int.Parse(inputs[0]);
+            int opponentScore = int.Parse(inputs[1]);
+            int visiblePacCount = int.Parse(Console.ReadLine()); // all your pacs and enemy pacs in sight
+            // Pac arrays
+            List<Pac>  myPacsArray = new List<Pac>();
+            List<Pac>  otherPacsArray = new List<Pac>();
+            graphicGrid = cleanGraphicGrid(graphicGrid);
+            int myPacIndex = 0;
+            Console.Error.WriteLine( visiblePacCount);
+
+            // visible Pac, which one is mine
+            // collect my Pacs into array myPac
+            for (int i = 0; i < visiblePacCount; i++)
+                {
+                    inputs = Console.ReadLine().Split(' ');
+                    int pacId = int.Parse(inputs[0]);   // pac number (unique within a team)
+                    bool mine = inputs[1] != "0";       // true if this pac is yours
+                    int x = int.Parse(inputs[2]);       // position in the grid
+                    int y = int.Parse(inputs[3]);       // position in the grid
+                    string typeId = inputs[4];          // Pac type ID
+                    int speedTurnsLeft = int.Parse(inputs[5]); // the number of remaining turns before the speed effect fades
+                    int abilityCooldown = int.Parse(inputs[6]); // the number of turns until you can request a new ability for this pac ( SWITCH and SPEED)
+                    if (mine)
+                        {
+                            // Initialize new PacArray member
+                            graphicGrid[y,x] = 'P'; //my Pac
+                            myPacsArray.Add( new Pac { PacID = pacId, PacX = x, PacY = y, PacTypeId = typeId, PacTargetValue = 0, PacTargetSet = false,
+                                                        PacSpeedTurnsLeft = speedTurnsLeft, PacAbilityCooldown = abilityCooldown });
+                            Console.Error.WriteLine("Pac id created "+ myPacsArray[myPacIndex].PacID ); 
+                            myPacIndex = myPacIndex + 1;                                          
+                        }
+                    else
+                        {
+                            graphicGrid[y,x] = 'B'; // Bad guys
+                            otherPacsArray.Add( new Pac { PacID = pacId, PacX = x, PacY = y, PacTypeId = typeId });
+                            Console.Error.WriteLine("Other Pac id created " + typeId); 
+                        }
+
+                }
+            if (myPacIndex > 0)
+                myPacIndex = myPacIndex - 1;
+            Console.Error.WriteLine("my Pac index " + myPacIndex);
+            // identify threat from other Pac's - is there any - distance, type, ability to switch
+            // make strategy for each of your pac's - Attack, Deffend/run away, Collect pellets
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    Console.Error.Write( graphicGrid[i, j] );
+                }
+                Console.Error.WriteLine("");
+            }
+        
+
+            // Work with Pellets now
+            // if not in attack mode, which way to collect pellets
+
+            int visiblePelletCount = int.Parse(Console.ReadLine()); // all pellets in sight
+            Console.Error.WriteLine("visible Pellet count "+ visiblePelletCount);
+
+            if (visiblePelletCount == 0)
+            {
+                //define direction for my pacs if no
+                for (int ee = 0 ; ee <= myPacIndex; ee++)
+                {                
+                    myPacsArray[ee].PacTargetX = setRandomInt(0, width-1 ); //- myPacsArray[ee].PacX ) ; // myPacTargetX[e] = x;
+                    myPacsArray[ee].PacTargetY = setRandomInt(0, height-1 ); //- myPacsArray[ee].PacY ); // myPacTargetY[e] = y;
+                    myPacsArray[ee].PacTargetValue = 1;                      // myPacTargetPoints[e] = value;
+                }
+            }
+
+            for (int i = 0; i < visiblePelletCount; i++)
+            {
+                Console.Error.WriteLine("Pellet no " + i);
+                inputs = Console.ReadLine().Split(' ');
+                int x = int.Parse(inputs[0]);
+                int y = int.Parse(inputs[1]);
+                int value = int.Parse(inputs[2]); // amount of points this pellet is worth
+                int tempX;
+                int tempY;
+                int tempValue;
+                bool targetPelletUsed = false;
+                    if (value == 10)
+                    {
+                        for (int e = 0 ; e <= myPacIndex; e++)
+                            {
+                                if ( myPacsArray[e].PacTargetSet == false ) 
+                                    {
+                                        myPacsArray[e].PacTargetX = x;
+                                        myPacsArray[e].PacTargetY = y;
+                                        myPacsArray[e].PacTargetValue = value;
+                                        myPacsArray[e].PacTargetSet = true; 
+
+                                        Console.Error.WriteLine("Target assigned to empty " + e + " Pac ID " + myPacsArray[e].PacID );
+                                        targetPelletUsed = true;
+                                    }
+                                else
+                                    {
+                                        bool betterPellet = isPelletBetter( myPacsArray[e].PacX, myPacsArray[e].PacY,
+                                                                            myPacsArray[e].PacTargetX, myPacsArray[e].PacTargetY, myPacsArray[e].PacTargetValue,
+                                                                            x, y, value);
+
+                                        Console.Error.WriteLine(betterPellet);
+                                        if ( betterPellet)
+                                            {
+                                            tempX = myPacsArray[e].PacTargetX ; // myPacTargetX[e];
+                                            tempY = myPacsArray[e].PacTargetY ; //myPacTargetY[e];
+                                            tempValue = myPacsArray[e].PacTargetValue ; //myPacTargetPoints[e];
+
+                                            myPacsArray[e].PacTargetX = x; // myPacTargetX[e] = x;
+                                            myPacsArray[e].PacTargetY = y; // myPacTargetY[e] = y;
+                                            myPacsArray[e].PacTargetValue = value; // myPacTargetPoints[e] = value;
+                                        
+                                            x = tempX;
+                                            y = tempY;
+                                            value = tempValue;
+
+                                            Console.Error.WriteLine("Target updated for Pac " + e + " Pac id " + myPacsArray[e].PacID);
+                                            // targetPelletUsed = true;
+                                            }
+                                        else    
+                                            {
+                                                // new pellet is not better
+                                            }
+                                            
+                                    }
+                                if (targetPelletUsed)
+                                        e = myPacIndex +1;
+
+                              }
+                    }
+
+              }
+                        //List<int> moves = new List<int>(); 
+                        for( int element = 0 ; element <= myPacIndex; element++ )
+                        {
+                            
+                            if (element > 0)
+                                {   
+                                    Console.Write("|");
+                                }
+                            
+                            // need to change type because of the enemy?
+                            string changeToType = "0000"; 
+                            foreach ( Pac otherElement in otherPacsArray)
+                            {
+                                if ( Math.Abs(otherElement.PacX - myPacsArray[element].PacX) <2 && Math.Abs(otherElement.PacY - myPacsArray[element].PacY )  <2)
+                                {
+                                    //need to change type
+                                    switch (otherElement.PacTypeId)
+                                        {
+                                        case "ROCK":
+                                            changeToType = "PAPER";
+                                            break;
+                                        case "PAPER":
+                                            changeToType = "SCISSORS";
+                                            break;
+                                        case "SCISSORS":
+                                            changeToType = "ROCK";
+                                            break;
+                                        }
+                                }
+                            }
+                            if ( ( changeToType != "0000") && ( myPacsArray[element].PacTypeId != changeToType) && (myPacsArray[element].PacAbilityCooldown == 0))
+                                {
+                                    Console.Write("SWITCH " + myPacsArray[element].PacID + " " + changeToType );
+                                }
+                            else
+                                {
+                                if ( myPacsArray[element].PacAbilityCooldown == 0 )
+                                     Console.Write("SPEED "+ myPacsArray[element].PacID);
+                                else
+                                    // prevent colisions
+                                    {
+                                     Console.Write("MOVE "+ myPacsArray[element].PacID + " " + myPacsArray[element].PacTargetX + " " + myPacsArray[element].PacTargetY);
+                                    }
+                                }
+                        }
+                        
+                        Console.WriteLine("");
+
+
+        }
+    }
+}

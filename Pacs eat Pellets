@@ -109,7 +109,7 @@ class Player
         // game loop
         while (true)
         {
-            Console.Error.WriteLine(" new while cycle");
+            Console.Error.WriteLine(" Start of new while cycle");
             // how many visible Pacs ?
             // and how many i got
             inputs = Console.ReadLine().Split(' ');
@@ -243,65 +243,67 @@ class Player
                               }
                     }
 
-              }
-
-             for (int i = 0; i < height; i++)
+            }
+            
+            foreach (Pac coordinates in myPacsArray)
+            {
+                    Console.Error.WriteLine(coordinates.PacY + " " + coordinates.PacX);
+            }
+            for (int i = 0; i < height; i++)
             {
                 for (int j = 0; j < width; j++)
                 {
-                    Console.Error.Write( graphicGrid[i, j] );
+                        Console.Error.Write( graphicGrid[i, j] );
                 }
                 Console.Error.WriteLine("");
             }
-                        //List<int> moves = new List<int>(); 
-                        for( int element = 0 ; element <= myPacIndex; element++ )
-                        {
+            
+            // Manage commands = output stream 
+            for( int element = 0 ; element <= myPacIndex; element++ )
+            {
+                if (element > 0)
+                {  
+                    Console.Write("|");
+                }
                             
-                            if (element > 0)
-                                {   
-                                    Console.Write("|");
-                                }
-                            
-                            // need to change type because of the enemy?
-                            string changeToType = "0000"; 
-                            foreach ( Pac otherElement in otherPacsArray)
-                            {
-                                if ( Math.Abs(otherElement.PacX - myPacsArray[element].PacX) <2 && Math.Abs(otherElement.PacY - myPacsArray[element].PacY )  <2)
-                                {
-                                    //need to change type
-                                    switch (otherElement.PacTypeId)
-                                        {
-                                        case "ROCK":
-                                            changeToType = "PAPER";
-                                            break;
-                                        case "PAPER":
-                                            changeToType = "SCISSORS";
-                                            break;
-                                        case "SCISSORS":
-                                            changeToType = "ROCK";
-                                            break;
-                                        }
-                                }
-                            }
-                            if ( ( changeToType != "0000") && ( myPacsArray[element].PacTypeId != changeToType) && (myPacsArray[element].PacAbilityCooldown == 0))
-                                {
-                                    Console.Write("SWITCH " + myPacsArray[element].PacID + " " + changeToType );
-                                }
-                            else
-                                {
-                                if ( myPacsArray[element].PacAbilityCooldown == 0 )
-                                     Console.Write("SPEED "+ myPacsArray[element].PacID);
-                                else
-                                    // prevent colisions
-                                    {
-                                     Console.Write("MOVE "+ myPacsArray[element].PacID + " " + myPacsArray[element].PacTargetX + " " + myPacsArray[element].PacTargetY);
-                                    }
-                                }
+                // need to change type because of the enemy?
+                string changeToType = "0000"; 
+                foreach ( Pac otherElement in otherPacsArray)
+                {
+                    if ( Math.Abs(otherElement.PacX - myPacsArray[element].PacX) <2 && Math.Abs(otherElement.PacY - myPacsArray[element].PacY )  <2)
+                    {
+                        //need to change type
+                        switch (otherElement.PacTypeId)
+                       {
+                            case "ROCK":
+                                changeToType = "PAPER";
+                                break;
+                            case "PAPER":
+                                changeToType = "SCISSORS";
+                                break;
+                            case "SCISSORS":
+                                changeToType = "ROCK";
+                                break;
                         }
-                        
-                        Console.WriteLine("");
-
-
-        }
-    }
-}
+                    }
+                }
+                if ( ( changeToType != "0000") && ( myPacsArray[element].PacTypeId != changeToType) && (myPacsArray[element].PacAbilityCooldown == 0))
+                {
+                    Console.Write("SWITCH " + myPacsArray[element].PacID + " " + changeToType );
+                }
+                else
+                {
+                    if ( myPacsArray[element].PacAbilityCooldown == 0 )
+                        Console.Write("SPEED "+ myPacsArray[element].PacID);
+                    else
+                        // prevent colisions
+                        {
+                        Console.Write("MOVE "+ myPacsArray[element].PacID + " " + myPacsArray[element].PacTargetX + " " + myPacsArray[element].PacTargetY);
+                        }
+                }
+            } 
+            Console.WriteLine("");
+            // End of output stream management
+        } // End of while loop
+    } //Edn of Main 
+} // End of class Player
